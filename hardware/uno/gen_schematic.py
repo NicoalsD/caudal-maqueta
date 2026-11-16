@@ -118,10 +118,6 @@ CUSTOM = {
         ("power_in", "+", "2", 0, 7.62, 270),
         ("power_in", "-", "3", 0, -7.62, 90),
     ]),
-    "jack": custom_symbol("Fuente_5V", "External 5 V supply for the servos, common GND", 6.35, 5.08, [
-        ("passive", "+", "1", 0, 7.62, 270),
-        ("passive", "-", "2", 0, -7.62, 90),
-    ]),
 }
 
 
@@ -197,7 +193,7 @@ def main(libdir: Path) -> None:
             rot = {(0, 1): 0, (0, -1): 180, (-1, 0): 270, (1, 0): 90}[direction]
             place("gnd", ref, "GND", x, y, {}, rot=rot, hide_value=True)
 
-    uno_nets = {"D8": "TRIG", "D9": "ECHO", "D5": "SERVO1_PWM", "D6": "SERVO2_PWM",
+    uno_nets = {"D9": "TRIG", "D8": "ECHO", "D10": "SERVO1_PWM", "D11": "SERVO2_PWM",
                 "+5V": "+5V", "GND": "GND"}
     place("uno", "A1", "Arduino UNO R3 (USB al computador)", 101.6, 101.6, uno_nets,
           text_dx=-12.7, ref_dy=43.18, value_dy=45.72)
@@ -208,16 +204,15 @@ def main(libdir: Path) -> None:
           {"1": "SERVO1_PWM", "2": "+5V", "3": "GND"}, **side)
     place("servo", "M2", "MG90S llave salida 2", 190.5, 127.0,
           {"1": "SERVO2_PWM", "2": "+5V", "3": "GND"}, **side)
-    place("cap", "C1", "1000uF 16V (+ al riel 5V)", 251.46, 88.9, {"1": "+5V", "2": "GND"}, **side)
-    place("jack", "J1", "Fuente externa 5V 2A (opcional)", 251.46, 127.0, {"1": "+5V", "2": "GND"}, **side)
+    place("cap", "C1", "470-1000uF (opcional, + al riel 5V)", 251.46, 88.9, {"1": "+5V", "2": "GND"}, **side)
     # The PWR_FLAG says the +5V/GND nets are fed (by the USB of the UNO).
     place("flag", "#FLG01", "PWR_FLAG", 251.46, 97.79, {}, rot=180)
 
     notes = [
         (20.32, 160.02, "Cables reales: HC-SR04 Vcc=cafe, Trig=naranja, Echo=amarillo, Gnd=ROJO (colores invertidos: revisar antes de conectar)."),
         (20.32, 165.1, "Servos MG90S: senal=naranja, +5V=rojo, GND=cafe. Los rieles +5V y GND son los de la protoboard (unir las dos mitades en la fila 30)."),
-        (20.32, 170.18, "Con la fuente externa J1: quitar el cable del pin 5V del Arduino al riel + y dejar el GND comun. Nunca juntar dos fuentes de 5 V."),
-        (20.32, 175.26, "C1 entre los rieles (pata + al riel +5V) para los picos de los servos. El UNO va por USB al computador que corre caudal-sim maqueta-usb."),
+        (20.32, 170.18, "Sin fuente externa: todo se alimenta del USB del Arduino por los rieles de la protoboard (usar solo las columnas 1 a 30)."),
+        (20.32, 175.26, "C1 es opcional: entre los rieles de abajo (pata + al riel +5V) suaviza los picos de los servos. El UNO va por USB al computador que corre caudal-sim maqueta-usb."),
     ]
     for x, y, text in notes:
         items.append(f'(text "{text}" (exclude_from_sim no) (at {x} {y} 0) (effects (font (size 1.524 1.524)) (justify left bottom)) (uuid "{uid("t", y)}"))')

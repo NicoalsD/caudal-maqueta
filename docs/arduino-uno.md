@@ -12,6 +12,12 @@ App CAUDAL ──> caudal-backend ──(comandos firmados)──> caudal-sim ma
 
 ## 1. Conexiones
 
+Montaje en la protoboard (colores reales de los cables, todo alimentado por el USB del Arduino):
+
+![Montaje en la protoboard](images/maqueta-uno-protoboard.png)
+
+Diagrama de bloques de las mismas conexiones:
+
 ![Conexiones de la maqueta con Arduino UNO](images/maqueta-uno-conexiones.png)
 
 Esquemático en KiCad 10 (`hardware/uno/maqueta-uno.kicad_sch`, con PDF y SVG). Cada etiqueta (`TRIG`, `ECHO`, `SERVO1_PWM`, `SERVO2_PWM`) y cada símbolo de +5V o GND con el mismo nombre es el mismo cable. El ERC no da errores. Para regenerarlo: `python3 hardware/uno/gen_schematic.py <carpeta de símbolos de KiCad>`.
@@ -21,18 +27,19 @@ Esquemático en KiCad 10 (`hardware/uno/maqueta-uno.kicad_sch`, con PDF y SVG). 
 | Componente | Cable | Va a |
 |---|---|---|
 | HC-SR04 Vcc | café | riel +5 V |
-| HC-SR04 Trig | naranja | D8 |
-| HC-SR04 Echo | amarillo | D9 |
+| HC-SR04 Trig | naranja | D9 |
+| HC-SR04 Echo | amarillo | D8 |
 | HC-SR04 Gnd | rojo | riel GND |
-| Servo 1 señal | naranja | D5 |
-| Servo 2 señal | naranja | D6 |
+| Servo 1 señal | naranja | D10 |
+| Servo 2 señal | naranja | D11 |
 | Servos, rojo | rojo | riel +5 V |
 | Servos, café | café | riel GND |
-| Arduino 5V / GND | | riel +5 V / riel GND |
+| Arduino 5V / GND | rojo / negro | riel + / riel − de abajo |
+| Puentes en las columnas 1 y 2 | negro / rojo | unen los rieles de arriba con los de abajo |
 
 - **El sensor tiene los colores al revés de la costumbre:** el café es Vcc y el rojo es Gnd. Antes de conectar el USB, revisa que el café llegue a 5V y el rojo a GND. Si se invierten, el sensor se daña.
-- **Protoboard:** en la de 830 puntos, los rieles están cortados a la mitad (fila 30). Une las dos mitades con un puente o usa solo una.
-- **Alimentación:** el USB da unos 500 mA. El firmware mueve un solo servo a la vez y despacio (1 grado cada 8 ms), así que para probar alcanza. Si el Arduino se reinicia al mover un servo, pon una fuente de 5 V y 2 A en los rieles. En ese caso quita el cable del pin 5V del Arduino al riel + y deja el GND unido. Un condensador de 470 a 1000 µF entre los rieles (la pata + al riel +) suaviza los picos.
+- **Protoboard:** usa solo la mitad izquierda (columnas 1 a 30), porque en la de 830 puntos los rieles se cortan a la mitad. El sensor va a los rieles de arriba y los servos y el Arduino a los de abajo; dos puentes en las columnas 1 y 2 unen los rieles.
+- **Alimentación:** no hay fuente externa: todo sale del USB del Arduino (unos 500 mA). El firmware mueve un solo servo a la vez y despacio (1 grado cada 8 ms) para no pasarse. Si el Arduino se reinicia al mover un servo, ajusta el ángulo cerrado para que no fuerce la manguera y, si tienes uno, pon un condensador de 470 a 1000 µF entre los rieles de abajo (la pata + al riel +).
 - **Sensor:** va arriba de la botella, centrado y mirando al agua. El agua llena debe quedar a 3 cm o más del sensor, que es su zona ciega. La boca tiene que ser ancha: en un cuello angosto, el eco rebota en las paredes.
 - **Servos:** cada uno pisa la manguera contra un tope fijo (por ejemplo, una pieza de madera pegada). Cerrado basta con que no gotee: forzarlo calienta el servo y consume corriente.
 
@@ -46,7 +53,7 @@ pio run -t upload
 pio device monitor        # debe mostrar: READY caudal-uno 1.0.0
 ```
 
-Con el Arduino IDE: abre `uno/caudal_uno/caudal_uno.ino`, elige la placa **Arduino Uno** y el puerto, y sube. Los pines están en `uno/caudal_uno/config.h`.
+Con el Arduino IDE: abre `uno/caudal_uno/caudal_uno.ino`, elige la placa **Arduino Uno** y el puerto, y sube. Los pines están en `uno/caudal_uno/config.h` (Trig D9, Echo D8, servos D10 y D11: así ningún cable se cruza en la protoboard).
 
 En el monitor serie (115200 baudios, fin de línea `\n`) se puede probar a mano:
 
