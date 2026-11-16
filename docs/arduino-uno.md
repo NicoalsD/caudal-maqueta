@@ -14,6 +14,10 @@ App CAUDAL ──> caudal-backend ──(comandos firmados)──> caudal-sim ma
 
 ![Conexiones de la maqueta con Arduino UNO](images/maqueta-uno-conexiones.png)
 
+Esquemático en KiCad 10 (`hardware/uno/maqueta-uno.kicad_sch`, con PDF y SVG). Cada etiqueta (`TRIG`, `ECHO`, `SERVO1_PWM`, `SERVO2_PWM`) y cada símbolo de +5V o GND con el mismo nombre es el mismo cable. El ERC no da errores. Para regenerarlo: `python3 hardware/uno/gen_schematic.py <carpeta de símbolos de KiCad>`.
+
+![Esquemático en KiCad](images/maqueta-uno-esquematico.png)
+
 | Componente | Cable | Va a |
 |---|---|---|
 | HC-SR04 Vcc | café | riel +5 V |

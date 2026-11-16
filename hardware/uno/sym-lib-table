@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "caudal")(type "KiCad")(uri "${KIPRJMOD}/caudal.kicad_sym")(options "")(descr "Simbolos propios de la maqueta CAUDAL"))
+)
