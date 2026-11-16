@@ -67,6 +67,18 @@ En el monitor serie (115200 baudios, fin de línea `\n`) se puede probar a mano:
 
 En Linux, el puerto es `/dev/ttyACM0` (UNO original) o `/dev/ttyUSB0` (clon con CH340). Si sale "permiso denegado", agrega tu usuario al grupo `dialout` (`sudo usermod -aG dialout $USER`) y vuelve a iniciar sesión.
 
+### Probar sin la placa (simulador)
+
+`uno/sim/run.sh` corre el firmware real en un ATmega328P simulado (simavr) con un HC-SR04 y dos servos virtuales, y abre un puerto serie virtual en `uno/sim/.build/ttyUNO`. Necesita `arduino-cli core install arduino:avr` o PlatformIO para el compilador AVR.
+
+```bash
+uno/sim/run.sh                                   # deja la terminal mostrando los servos
+echo 150 > uno/sim/.build/distance_mm            # en otra terminal: el agua a 150 mm (-1 = sin eco)
+uv run caudal-sim maqueta-usb probar --puerto ../caudal-maqueta/uno/sim/.build/ttyUNO
+```
+
+Con ese mismo puerto funcionan `servo`, `calibrar` y `correr`.
+
 ## 3. Calibrar
 
 Desde `caudal-simulador`. La calibración queda en `scenarios/maqueta-usb.yaml`:
