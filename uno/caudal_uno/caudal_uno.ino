@@ -4,10 +4,11 @@
 // the HC-SR04 and moves two servos to raw angles. The PC bridge (`caudal-sim maqueta-usb` in
 // caudal-simulador) owns the calibration, the signatures and the talk with caudal-backend.
 //
-// Wiring (see docs/images/maqueta-uno-conexiones.png):
-//   HC-SR04  VCC -> 5V, GND -> GND, TRIG -> D8, ECHO -> D9
-//   Servo 1  signal (orange) -> D5, red -> 5V rail, brown -> GND rail
-//   Servo 2  signal (orange) -> D6, red -> 5V rail, brown -> GND rail
+// Wiring (see docs/images/maqueta-uno-protoboard.png). Everything is fed by the USB of the UNO
+// through the breadboard rails; there is no external supply:
+//   HC-SR04  VCC -> 5V rail, GND -> GND rail, TRIG -> D9, ECHO -> D8
+//   Servo 1  signal (orange) -> D10, red -> 5V rail, brown -> GND rail
+//   Servo 2  signal (orange) -> D11, red -> 5V rail, brown -> GND rail
 //
 // Serial protocol, 115200 baud, one command per line ('\n'), answers are one line each:
 //   PING            -> PONG

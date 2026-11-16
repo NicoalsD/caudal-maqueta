@@ -7,19 +7,20 @@
 
 // HC-SR04 pins. The UNO is 5 V logic, so ECHO needs no voltage divider.
 #ifndef TRIG_PIN
-#define TRIG_PIN 8
+#define TRIG_PIN 9
 #endif
 #ifndef ECHO_PIN
-#define ECHO_PIN 9
+#define ECHO_PIN 8
 #endif
 
-// Servo signal pins. Any digital pin works; the Servo library only takes PWM from D9/D10,
-// and D9 here is a plain input.
+// Servo signal pins. Any digital pin works: the Servo library makes its own pulses (Timer1),
+// so analogWrite on D9/D10 is lost, which this firmware does not use. The pins are chosen so
+// that no wire crosses another on the breadboard (docs/images/maqueta-uno-protoboard.png).
 #ifndef SERVO_1_PIN
-#define SERVO_1_PIN 5
+#define SERVO_1_PIN 10
 #endif
 #ifndef SERVO_2_PIN
-#define SERVO_2_PIN 6
+#define SERVO_2_PIN 11
 #endif
 
 // A 30 ms echo timeout covers about 5 m. The pulseIn default of one second would freeze the
