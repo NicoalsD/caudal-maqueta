@@ -33,6 +33,10 @@ Servo servos[SERVO_COUNT];
 int servoAngle[SERVO_COUNT] = {NO_ANGLE, NO_ANGLE};
 int servoTarget[SERVO_COUNT] = {NO_ANGLE, NO_ANGLE};
 unsigned long lastServoStep = 0;
+// After the first move of a servo its real position was unknown, so it jumps at full speed.
+// Nothing else moves, and DONE is not said, until that jump has had time to finish.
+int8_t settlingServo = -1;
+unsigned long settleStart = 0;
 
 char line[LINE_CAPACITY];
 uint8_t lineLength = 0;
@@ -100,8 +104,22 @@ int8_t movingServo() {
   return -1;
 }
 
+void printDone(uint8_t i) {
+  Serial.print(F("DONE S"));
+  Serial.print(i + 1);
+  Serial.print(' ');
+  Serial.println(servoAngle[i]);
+}
+
 void stepServos() {
   unsigned long now = millis();
+  if (settlingServo >= 0) {
+    if (now - settleStart < SERVO_FIRST_MOVE_SETTLE_MS) {
+      return;
+    }
+    printDone(settlingServo);
+    settlingServo = -1;
+  }
   if (now - lastServoStep < SERVO_STEP_MS) {
     return;
   }
@@ -116,15 +134,16 @@ void stepServos() {
   if (servoAngle[i] == NO_ANGLE) {
     // First move after boot: the real position is unknown, so it jumps to the target.
     servoAngle[i] = servoTarget[i];
+    servos[i].write(servoAngle[i]);
+    settlingServo = i;
+    settleStart = now;
+    return;
   } else {
     servoAngle[i] += (servoTarget[i] > servoAngle[i]) ? 1 : -1;
   }
   servos[i].write(servoAngle[i]);
   if (servoAngle[i] == servoTarget[i]) {
-    Serial.print(F("DONE S"));
-    Serial.print(i + 1);
-    Serial.print(' ');
-    Serial.println(servoAngle[i]);
+    printDone(i);
   }
 }
 

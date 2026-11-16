@@ -45,6 +45,10 @@
 #ifndef SERVO_STEP_MS
 #define SERVO_STEP_MS 8UL
 #endif
+// Time given to the full-speed jump of the first move after boot (MG90S: ~0.1 s per 60 deg).
+#ifndef SERVO_FIRST_MOVE_SETTLE_MS
+#define SERVO_FIRST_MOVE_SETTLE_MS 600UL
+#endif
 #ifndef SERVO_MIN_DEG
 #define SERVO_MIN_DEG 0
 #endif
