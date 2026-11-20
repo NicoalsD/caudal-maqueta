@@ -1,6 +1,8 @@
 # CAUDAL maqueta
 
-Maqueta física del acueducto a escala de laboratorio: **1 tanque, sus sensores y 2 tuberías de salida**. Un ESP32 mide el nivel del tanque y el caudal de cada salida, abre y cierra cada electroválvula, y habla con [`caudal-backend`](https://github.com/NicoalsD/caudal-backend) por HTTPS con el protocolo de dispositivos (firma Ed25519 por cada petición).
+> **Montaje actual (2026-11-20):** la institución de prueba `maqueta-caudal` usa un **Arduino UNO por USB** con un HC-SR04 y dos servos MG90S que pisan las mangueras de suero ([docs/arduino-uno.md](docs/arduino-uno.md)). Este repositorio contiene el firmware del **ESP32**, que queda como alternativa futura. El firmware no cambia con el alcance B2B; la calibración y los ángulos se configurarán desde la app (por implementar).
+
+Maqueta física del acueducto a escala de laboratorio: **1 tanque, sus sensores y 2 tuberías de salida**. Un ESP32 (alternativa al montaje actual con Arduino UNO) mide el nivel del tanque y el caudal de cada salida, abre y cierra cada electroválvula, y habla con [`caudal-backend`](https://github.com/NicoalsD/caudal-backend) por HTTPS con el protocolo de dispositivos (firma Ed25519 por cada petición).
 
 Así cierra el lazo completo: el backend decide, manda un comando firmado, la maqueta lo ejecuta y responde con un ack. El circuito es cerrado: el agua sale del tanque por las dos salidas, cae al reservorio y la bomba la regresa al tanque.
 

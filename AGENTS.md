@@ -13,9 +13,9 @@ Los comentarios de código y los logs por serie van en inglés, sin excepción. 
 
 ## 1. Qué es CAUDAL y qué hace este repo
 
-CAUDAL es "el cuaderno del acueducto, pero digital" para las veredas de Guaitarilla (Nariño). Visión completa: [Caudal.md](https://github.com/NicoalsD/caudal-backend/blob/develop/docs/Caudal.md).
+CAUDAL es un producto B2B para instituciones que almacenan agua en un tanque y la reparten por válvulas. Visión completa: [Caudal.md](https://github.com/NicoalsD/caudal-backend/blob/develop/docs/Caudal.md).
 
-Este repo es el firmware de la **maqueta física**: un tanque de ~20 L, sus sensores (ultrasónico JSN-SR04T, flotadores, YF-S201 por salida) y dos electroválvulas. Un ESP32 con PlatformIO y Arduino habla con `caudal-backend` por HTTPS con el protocolo de dispositivos firmados con Ed25519.
+Este repo es el firmware de la **maqueta física con ESP32** (alternativa al montaje de la institución de prueba `maqueta-caudal`, que hoy usa Arduino UNO por USB; ver [`docs/arduino-uno.md`](docs/arduino-uno.md)): un tanque de ~20 L, sus sensores (ultrasónico JSN-SR04T, flotadores, YF-S201 por salida) y dos electroválvulas. Un ESP32 con PlatformIO y Arduino habla con `caudal-backend` por HTTPS con el protocolo de dispositivos firmados con Ed25519.
 
 | Documento canónico | Enlace |
 |---|---|

@@ -2,7 +2,7 @@
 
 Variante de la maqueta para el banco de pruebas: una botella con dos salidas de manguera de suero, un **HC-SR04** arriba de la botella y dos **servos MG90S** que pisan la manguera de cada salida.
 
-El UNO no tiene Wi-Fi ni memoria para firmar con Ed25519. Por eso no habla con la API: es un periférico USB que mide la distancia y mueve los servos. El computador al que está conectado corre el puente `caudal-sim maqueta-usb correr` de [`caudal-simulador`](https://github.com/NicoalsD/caudal-simulador). El puente hace lo mismo que el firmware del ESP32: firma, envía el nivel y consulta y confirma los comandos de las dos llaves.
+El UNO no tiene Wi-Fi ni memoria para firmar con Ed25519. Por eso no habla con la API: es un periférico USB que mide la distancia y mueve los servos. El computador al que está conectado corre el puente `caudal-sim maqueta-usb correr` de [`caudal-simulador`](https://github.com/NicoalsD/caudal-simulador). El puente hace lo mismo que el firmware del ESP32: firma, envía el nivel y consulta y confirma los comandos de las dos llaves. Hoy envía el nivel en metros cada 20 s (`LEVEL`). En el modelo B2B envía la distancia en mm (`DISTANCE`) cada ~2 s, y el backend convierte con la geometría del tanque (por implementar).
 
 ```
 App CAUDAL ──> caudal-backend ──(comandos firmados)──> caudal-sim maqueta-usb ──USB──> Arduino UNO ──> servos
@@ -81,7 +81,7 @@ Con ese mismo puerto funcionan `servo`, `calibrar` y `correr`.
 
 ## 3. Calibrar
 
-Desde `caudal-simulador`. La calibración queda en `scenarios/maqueta-usb.yaml`:
+Desde `caudal-simulador`. Hoy la calibración queda en `scenarios/maqueta-usb.yaml`. En el modelo B2B se hace desde la app (botones "usar lectura actual como vacío/lleno" y ángulos de cada válvula), y el CLI `calibrar` queda para banco (por implementar):
 
 ```bash
 uv run caudal-sim maqueta-usb puertos                  # dónde está el Arduino
@@ -96,7 +96,7 @@ El asistente pide:
 2. **Botella llena hasta el máximo de uso:** mide la distancia al agua (`full_distance_mm`).
 3. **Por cada servo:** escribes ángulos hasta que la manguera queda libre (abierto) y luego hasta que queda pisada sin gotear (cerrado).
 
-El nivel que se envía a la API es `vacío − medido`, en metros, limitado entre 0 y `vacío − lleno`.
+Hoy el nivel que se envía a la API es `vacío − medido`, en metros, limitado entre 0 y `vacío − lleno`. En B2B el puente envía `DISTANCE` (mm) y el backend calcula el nivel (por implementar).
 
 ## 4. Conectar con la app
 
@@ -107,5 +107,5 @@ El nivel que se envía a la API es `vacío − medido`, en metros, limitado entr
    uv run caudal-sim maqueta-usb correr --api-url http://localhost:8080
    ```
 
-   Al arrancar, los dos servos van a **cerrado**. Cada segundo se mide el nivel y cada 20 s se envía. Cada 2 s, cada llave consulta sus comandos.
-3. En la app, abre o cierra una llave (diálogo de la llave en el acueducto en vivo, o el piloto automático). El servo se mueve y el backend recibe el `ACKED`. Si el UNO no confirma la posición en `max_travel_seconds`, la llave queda en `FAULT` y el comando responde `FAILED`.
+   Al arrancar, los dos servos van a **cerrado**. Cada segundo se mide la distancia. Hoy el nivel se envía cada 20 s; en B2B la distancia se envía cada ~2 s como `DISTANCE` (mm), dentro del límite de 60 peticiones por minuto (por implementar). Cada 2 s, cada llave consulta sus comandos.
+3. En la app, abre o cierra una válvula. En B2B, con los botones Abrir y Cerrar de Inicio; hoy, con el diálogo de la llave en el acueducto en vivo. También puede actuar el piloto automático. El servo se mueve y el backend recibe el `ACKED`. Si el UNO no confirma la posición en `max_travel_seconds`, la llave queda en `FAULT` y el comando responde `FAILED`.
