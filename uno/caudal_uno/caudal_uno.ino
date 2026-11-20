@@ -17,6 +17,9 @@
 //   S<n> <deg>      -> OK S<n> <deg>   starts a smooth move of servo n (1 or 2) to deg (0..180)
 //                      ... later      -> DONE S<n> <deg> when the servo reaches the angle
 //   R<n>            -> OK R<n>         releases servo n (no more holding torque)
+//   T<n> <us> <ms>  -> OK T<n> <us> <ms>  continuous-rotation (360 deg) servo: sends pulses of
+//                      <us> microseconds (speed and direction) for <ms> milliseconds
+//                      ... later      -> DONE T<n> when the time is up and the servo stopped
 //   anything else   -> ERR <reason>
 // On boot it prints `READY caudal-uno <version>`. Opening the port resets the UNO, so the
 // bridge waits for that line before it sends anything.
@@ -25,7 +28,7 @@
 
 #include "config.h"
 
-static const char FIRMWARE_VERSION[] = "1.0.0";
+static const char FIRMWARE_VERSION[] = "1.1.0";
 static const uint8_t SERVO_PINS[] = {SERVO_1_PIN, SERVO_2_PIN};
 static const uint8_t SERVO_COUNT = 2;
 static const int NO_ANGLE = -1;
@@ -38,6 +41,12 @@ unsigned long lastServoStep = 0;
 // Nothing else moves, and DONE is not said, until that jump has had time to finish.
 int8_t settlingServo = -1;
 unsigned long settleStart = 0;
+
+// Timed spin of a continuous servo: which one (-1 none) and when it ends. Only one at a time,
+// like the smooth moves, so the USB port feeds a single motor.
+int8_t spinningServo = -1;
+unsigned long spinStart = 0;
+unsigned long spinLength = 0;
 
 char line[LINE_CAPACITY];
 uint8_t lineLength = 0;
@@ -93,6 +102,17 @@ long distanceMm() {
     samples[j + 1] = key;
   }
   return samples[valid / 2];
+}
+
+// Stops a timed spin when its time is up: without pulses a continuous servo stops at once.
+void stopSpinIfDue() {
+  if (spinningServo < 0 || millis() - spinStart < spinLength) {
+    return;
+  }
+  servos[spinningServo].detach();
+  Serial.print(F("DONE T"));
+  Serial.println(spinningServo + 1);
+  spinningServo = -1;
 }
 
 // Index of the servo that is moving now, or -1. Servo 1 has priority.
@@ -185,6 +205,46 @@ void handleServoMove(const char *args) {
   }
 }
 
+void handleServoSpin(const char *args) {
+  int8_t i = servoIndex(args);
+  if (i < 0 || args[1] != ' ') {
+    Serial.println(F("ERR servo desconocido, usa T1 <us> <ms> o T2 <us> <ms>"));
+    return;
+  }
+  char *end = nullptr;
+  long us = strtol(args + 2, &end, 10);
+  if (end == args + 2 || *end != ' ' || us < SPIN_MIN_US || us > SPIN_MAX_US) {
+    Serial.println(F("ERR pulso fuera de 500..2500 us"));
+    return;
+  }
+  const char *rest = end + 1;
+  long ms = strtol(rest, &end, 10);
+  if (end == rest || *end != '\0' || ms < 1 || (unsigned long)ms > SPIN_MAX_MS) {
+    Serial.println(F("ERR tiempo fuera de 1..10000 ms"));
+    return;
+  }
+  if (spinningServo >= 0 && spinningServo != i) {
+    Serial.println(F("ERR el otro servo esta girando"));
+    return;
+  }
+  // A spin replaces any smooth move of the same servo.
+  servoTarget[i] = NO_ANGLE;
+  servoAngle[i] = NO_ANGLE;
+  if (!servos[i].attached()) {
+    servos[i].attach(SERVO_PINS[i]);
+  }
+  servos[i].writeMicroseconds((int)us);
+  spinningServo = i;
+  spinStart = millis();
+  spinLength = (unsigned long)ms;
+  Serial.print(F("OK T"));
+  Serial.print(i + 1);
+  Serial.print(' ');
+  Serial.print(us);
+  Serial.print(' ');
+  Serial.println(ms);
+}
+
 void handleServoRelease(const char *args) {
   int8_t i = servoIndex(args);
   if (i < 0 || args[1] != '\0') {
@@ -193,6 +253,9 @@ void handleServoRelease(const char *args) {
   }
   servos[i].detach();
   servoTarget[i] = servoAngle[i];
+  if (spinningServo == i) {
+    spinningServo = -1;
+  }
   Serial.print(F("OK R"));
   Serial.println(i + 1);
 }
@@ -221,6 +284,8 @@ void handleLine(const char *text) {
     handleServoMove(text + 1);
   } else if (text[0] == 'R') {
     handleServoRelease(text + 1);
+  } else if (text[0] == 'T') {
+    handleServoSpin(text + 1);
   } else {
     Serial.println(F("ERR comando desconocido"));
   }
@@ -267,5 +332,6 @@ void setup() {
 void loop() {
   readSerial();
   pingIfDue();
+  stopSpinIfDue();
   stepServos();
 }

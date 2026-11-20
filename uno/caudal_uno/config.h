@@ -57,6 +57,18 @@
 #define SERVO_MAX_DEG 180
 #endif
 
+// Timed spin of a continuous-rotation (360 deg) servo: the pulse width sets speed and direction,
+// so the limits keep it inside what the Servo library can make, and the longest spin stays short.
+#ifndef SPIN_MIN_US
+#define SPIN_MIN_US 500
+#endif
+#ifndef SPIN_MAX_US
+#define SPIN_MAX_US 2500
+#endif
+#ifndef SPIN_MAX_MS
+#define SPIN_MAX_MS 10000UL
+#endif
+
 #ifndef LINE_CAPACITY
 #define LINE_CAPACITY 32
 #endif
